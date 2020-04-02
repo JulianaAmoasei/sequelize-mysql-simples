@@ -14,9 +14,11 @@ module.exports = {
 				references: {model:'Authors', key:'id'}
 			},
       text: {
+				allowNull: false,
         type: Sequelize.STRING
       },
       category: {
+				allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {
@@ -30,11 +32,8 @@ module.exports = {
 			deletedAt: {
         allowNull: true,
         type: Sequelize.DATE
-			},
-			email: {
-        type: Sequelize.STRING
-			},
-    });
+			}    
+		});
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Quotes');
