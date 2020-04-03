@@ -22,10 +22,64 @@ class QuotesController {
 			const createdQuote = await database.Quotes.create(newQuote)
 			return res.status(201).json(createdQuote)
 		} catch (error) {
-			// console.log('caiu no erro', error)
 			return res.status(400).json(error.message);
 		}
 	}	
+
+	static async getQuote(req, res) {
+
+		const { id } = req.params
+
+    if (!Number(id)) {
+			return res.status(400).send('Favor inserir parâmetro válido')
+    }
+
+    try {
+      const oneQuote = await database.Quotes.findOne({
+				where: { id: Number(id) }
+			})
+      if (!oneQuote) {
+				return res.status(404).send(`Não encontrada frase com id ${id}`)
+      } else {
+				return res.status(200).json(oneQuote)
+			}
+    } catch (error) {
+			return res.status(400).json(error.message);
+    }
+	}
+	
+	static async updateQuote(req, res) {
+
+		const newQuoteInfo = req.body
+		const { id } = req.params
+		
+    try {
+      const oneQuote = await database.Quotes.findOne({ where: { id: Number(id) } })
+      if (oneQuote) {
+				await database.Quotes.update(newQuoteInfo, { where: { id: Number(id) } })
+				return res.status(200).json(await database.Quotes
+					.findOne({ where: { id: Number(id) } }))
+      } else {
+				return res.status(404).send(`Não encontrada frase com id ${id}`)
+			}
+    } catch (error) {
+			return res.status(400).json(error.message);
+    }		
+	}
+
+	static async deleteQuote(req, res) {
+
+		const { id } = req.params
+
+    try {
+      if (id) {
+        await database.Quotes.destroy({ where: { id: Number(id) } })
+        return res.status(200).send(`registro deletado`)
+      }
+    } catch (error) {
+      return res.status(400).json(error.message);
+    }
+	}
 }
 
 export default QuotesController
