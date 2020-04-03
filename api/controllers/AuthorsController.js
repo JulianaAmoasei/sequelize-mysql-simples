@@ -1,15 +1,24 @@
 import database from '../models'
+import AuthorService from '../services/AuthorService'
 
 class AuthorsController {
 
-	static async getAllAuthors(req, res) {
-		try {
-			const allAuthors = await database.Authors.findAll()
-			return res.status(200).send(allAuthors)
-		} catch (error) {
-			return res.status(500).send(error.message);
-		}
-	}
+  static async getAllAuthors(req, res) {
+    try {
+      const allAuthors = await AuthorService.getAllAuthors()
+      if (allAuthors.length > 0) {
+				const resObj = {
+					status: 200,
+					message: 'Lista de autores',
+					data: allAuthors
+				}
+				return res.status(200).json(resObj)
+      } else {
+        return res.status(200).json('Não há autores na lista')
+      }
+    } catch (error) {
+			return res.status(400).json(error.message)    }
+  }
 
 	static async addAuthor(req, res) {
 		//conferir se não há jeito melhor de fazer esse tratamento
