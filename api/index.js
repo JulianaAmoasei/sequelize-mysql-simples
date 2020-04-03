@@ -1,16 +1,16 @@
 import express from 'express'
 import bodyParser from 'body-parser'
-import authorRoute from './routes/authorRoute'
-import quoteRoute from './routes/quoteRoute'
+import authorsRoute from './routes/authorsRoute'
+import quotesRoute from './routes/quotesRoute'
  
 const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
-app.use('/authors', authorRoute)
-app.use('/quotes', quoteRoute)
+app.use('/authors', authorsRoute)
+app.use('/quotes', quotesRoute)
  
-// const port = process.env.PORT || 3000
+// const port = process.env.PORT || 3500
 const port = 3500
  
 app.get('*', (req, res) => res.status(200).send({

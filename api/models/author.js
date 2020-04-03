@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
 		tableName: 'Authors'
 	});
   Author.associate = function(models) {
-    Author.hasMany(models.Quotes)
+		Author.hasMany(models.Quotes)
   };
   return Author;
 };

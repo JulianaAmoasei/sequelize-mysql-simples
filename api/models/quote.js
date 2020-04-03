@@ -1,6 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Quote = sequelize.define('Quotes', {
+		authorId: DataTypes.INTEGER,
     text: DataTypes.STRING,
     category: DataTypes.STRING
   }, {
@@ -9,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
 		tableName: 'Quotes'
 	});
   Quote.associate = function(models) {
-    // Quote.belongsTo(models.Authors)
+		Quote.belongsTo(models.Authors)
   };
   return Quote;
 };
