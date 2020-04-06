@@ -14,16 +14,17 @@ class AuthorsController {
 				}
 				return res.status(200).json(resObj)
       } else {
-        return res.status(200).json('Não há autores na lista')
+        return res.status(204).json('Não há autores na lista')
       }
     } catch (error) {
-			return res.status(400).json(error.message)    }
+			return res.status(500).json(error.message)
+		}
   }
 
 	static async addAuthor(req, res) {
 		//conferir se não há jeito melhor de fazer esse tratamento
 		if (!req.body.name || typeof req.body.active != "boolean" || !req.body.email) {
-			return res.status(400).send('faltam informações')
+			return res.status(400).json({ message: 'faltam informações' })
 		}
 		const newAuthor = req.body
 		console.log(newAuthor)
@@ -32,7 +33,7 @@ class AuthorsController {
 			return res.status(201).json(createdAuthor)
 		} catch (error) {
 			console.log('caiu no erro', error)
-			return res.status(400).json(error.message);
+			return res.status(500).json(error.message);
 		}
 	}
 
@@ -42,7 +43,7 @@ class AuthorsController {
 		console.log('parâmetro id', id)
 
     if (!Number(id)) {
-			return res.status(400).send('Favor inserir parâmetro válido')
+			return res.status(400).json({ message: 'Favor inserir parâmetro válido' })
     }
 
     try {
@@ -50,12 +51,12 @@ class AuthorsController {
 				where: { id: Number(id) }
 			})
       if (!oneAuthor) {
-				return res.status(404).send(`Não encontrado autor com id ${id}`)
+				return res.status(204).json({ message: `Não encontrado autor com id ${id}` })
       } else {
 				return res.status(200).json(oneAuthor)
 			}
     } catch (error) {
-			return res.status(400).json(error.message);
+			return res.status(500).json(error.message);
     }
 	}
 	
@@ -71,10 +72,10 @@ class AuthorsController {
 				return res.status(200).json(await database.Authors
 					.findOne({ where: { id: Number(id) } }))
       } else {
-				return res.status(404).send(`Não encontrado autor com id ${id}`)
+				return res.status(204).json({ message: `Não encontrado autor com id ${id}` })
 			}
     } catch (error) {
-			return res.status(400).json(error.message);
+			return res.status(500).json(error.message);
     }		
 	}
 
@@ -87,10 +88,10 @@ class AuthorsController {
 
       if (authorToDelete) {
         await database.Authors.destroy({ where: { id: Number(id) } })
-        return res.status(200).send(`registro nome: ${authorToDelete.name} - deletado`)
+        return res.status(200).json({ message: `registro nome: ${authorToDelete.name} - deletado` })
       }
     } catch (error) {
-      return res.status(400).json(error.message);
+      return res.status(500).json(error.message);
     }
 	}
 }
