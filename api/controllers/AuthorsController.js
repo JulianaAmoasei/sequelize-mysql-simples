@@ -27,10 +27,11 @@ class AuthorsController {
 			return res.status(400).json({ message: 'faltam informações' })
 		}
 		const newAuthor = req.body
-		console.log(newAuthor)
 		try {
-			const createdAuthor = await database.Authors.create(newAuthor)
-			return res.status(201).json(createdAuthor)
+			await database.sequelize.transaction(async (t) => {
+				const result = await database.Authors.create(newAuthor, { transaction: t })
+				return res.status(201).json(result)
+			})
 		} catch (error) {
 			console.log('caiu no erro', error)
 			return res.status(500).json(error.message);
