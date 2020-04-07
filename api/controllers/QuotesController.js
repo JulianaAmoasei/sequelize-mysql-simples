@@ -29,7 +29,7 @@ class QuotesController {
     const { id } = req.params;
 
     if (!Number(id)) {
-      return res.status(400).json('Favor inserir parâmetro válido');
+      return res.status(400).json({ message: 'Favor inserir parâmetro válido' });
     }
 
     try {
@@ -68,7 +68,7 @@ class QuotesController {
     try {
       if (id) {
         await database.Quotes.destroy({ where: { id: Number(id) } });
-        return res.status(200).json('registro deletado');
+        return res.status(204).json('registro deletado');
       }
     } catch (error) {
       return res.status(500).json(error.message);

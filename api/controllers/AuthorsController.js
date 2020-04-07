@@ -20,7 +20,8 @@ class AuthorsController {
   }
 
   static async addAuthor(req, res) {
-    // conferir se não há jeito melhor de fazer esse tratamento
+		console.log(req.body)
+		// conferir se não há jeito melhor de fazer esse tratamento
     if (!req.body.name || typeof req.body.active !== 'boolean' || !req.body.email) {
       return res.status(400).json({ message: 'faltam informações' });
     }
@@ -82,7 +83,7 @@ class AuthorsController {
 
       if (authorToDelete) {
         await database.Authors.destroy({ where: { id: Number(id) } });
-        return res.status(200).json({ message: `registro nome: ${authorToDelete.name} - deletado` });
+        return res.status(204).json({ message: `registro nome: ${authorToDelete.name} - deletado` });
       }
     } catch (error) {
       return res.status(500).json(error.message);
