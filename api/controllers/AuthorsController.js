@@ -20,37 +20,28 @@ class AuthorsController {
   }
 
   static async addAuthor(req, res) {
-		console.log(req.body)
-		// conferir se não há jeito melhor de fazer esse tratamento
     if (!req.body.name || typeof req.body.active !== 'boolean' || !req.body.email) {
       return res.status(400).json({ message: 'faltam informações' });
     }
     const newAuthor = req.body;
     try {
-      await database.sequelize.transaction(async (t) => {
-        const result = await database.Authors.create(newAuthor, { transaction: t });
-        return res.status(201).json(result);
-      });
+			await AuthorService.addAuthor(newAuthor);
+			return await res.status(201).json(newAuthor);
     } catch (error) {
-      console.log('caiu no erro', error);
       return res.status(500).json(error.message);
     }
   }
 
   static async getAuthor(req, res) {
     const { id } = req.params;
-    console.log('parâmetro id', id);
 
     if (!Number(id)) {
       return res.status(400).json({ message: 'Favor inserir parâmetro válido' });
     }
-
     try {
-      const oneAuthor = await database.Authors.findOne({
-        where: { id: Number(id) },
-      });
+			const oneAuthor = await AuthorService.getAuthor(id);
       if (!oneAuthor) {
-        return res.status(204).json({ message: `Não encontrado autor com id ${id}` });
+        return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
       }
       return res.status(200).json(oneAuthor);
     } catch (error) {
@@ -59,32 +50,39 @@ class AuthorsController {
   }
 
   static async updateAuthor(req, res) {
-    const newAuthorInfo = req.body;
+		const newAuthorInfo = req.body;
     const { id } = req.params;
 
+		if (!Number(id) || Object.keys(newAuthorInfo).length === 0 && newAuthorInfo.constructor === Object) {
+      return res.status(400).json({ message: 'Favor inserir informações válidas' });
+    }
     try {
-      const oneAuthor = await database.Authors.findOne({ where: { id: Number(id) } });
-      if (oneAuthor) {
-        await database.Authors.update(newAuthorInfo, { where: { id: Number(id) } });
-        return res.status(200).json(await database.Authors
-          .findOne({ where: { id: Number(id) } }));
-      }
-      return res.status(204).json({ message: `Não encontrado autor com id ${id}` });
+			await AuthorService.updateAuthor(id, newAuthorInfo);
+			const updatedAuthor = await AuthorService.getAuthor(id)
+				if (!updatedAuthor) {
+					return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
+				}
+				return res.status(200).json(updatedAuthor);	
     } catch (error) {
       return res.status(500).json(error.message);
     }
-  }
-
+	}
+	
   static async deleteAuthor(req, res) {
-    const { id } = req.params;
+		const { id } = req.params;
 
+		if (!Number(id)) {
+      return res.status(400).json({ message: 'Favor inserir parâmetros válidos' });
+		}
+				
     try {
-      const authorToDelete = await database.Authors.findOne({ where: { id: Number(id) } });
+      const authorToDelete = await AuthorService.getAuthor(id);
 
-      if (authorToDelete) {
-        await database.Authors.destroy({ where: { id: Number(id) } });
-        return res.status(204).json({ message: `registro nome: ${authorToDelete.name} - deletado` });
-      }
+      if (!authorToDelete) {
+				return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
+			}
+			await AuthorService.deleteAuthor(id);
+			return res.status(200).json({ message: `registro nome: ${authorToDelete.name} - deletado` });
     } catch (error) {
       return res.status(500).json(error.message);
     }
