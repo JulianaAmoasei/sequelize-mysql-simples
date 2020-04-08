@@ -1,23 +1,19 @@
-import database from '../models';
 import AuthorService from '../services/AuthorService';
+import MessageService from '../services/MessageService';
 
 class AuthorsController {
   static async getAllAuthors(req, res) {
     try {
-      const allAuthors = await AuthorService.getAllAuthors();
+			const allAuthors = await AuthorService.getAllAuthors();
       if (allAuthors.length > 0) {
-        const resObj = {
-          status: 200,
-          message: 'Lista de autores',
-          data: allAuthors,
-        };
-        return res.status(200).json(resObj);
-      }
-      return res.status(204).json('Não há autores na lista');
+				const resObj = new MessageService('success', 200, 'Lista de autores', allAuthors)
+        return res.json(resObj.sendMessage());
+			};
+      return res.status(200).json('Não há autores na lista');
     } catch (error) {
       return res.status(500).json(error.message);
-    }
-  }
+		}
+	}
 
   static async addAuthor(req, res) {
     if (!req.body.name || typeof req.body.active !== 'boolean' || !req.body.email) {
@@ -42,8 +38,9 @@ class AuthorsController {
 			const oneAuthor = await AuthorService.getAuthor(id);
       if (!oneAuthor) {
         return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
-      }
-      return res.status(200).json(oneAuthor);
+			}
+			const resObj = new MessageService('success', 200, 'Autor encontrado', oneAuthor)
+			return res.json(resObj.sendMessage());
     } catch (error) {
       return res.status(500).json(error.message);
     }
