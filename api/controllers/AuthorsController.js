@@ -1,98 +1,89 @@
-import database from '../models'
-import AuthorService from '../services/AuthorService'
+import AuthorService from '../services/AuthorService';
+import MessageService from '../services/MessageService';
 
 class AuthorsController {
-
   static async getAllAuthors(req, res) {
     try {
-      const allAuthors = await AuthorService.getAllAuthors()
+			const allAuthors = await AuthorService.getAllAuthors();
       if (allAuthors.length > 0) {
-				const resObj = {
-					status: 200,
-					message: 'Lista de autores',
-					data: allAuthors
-				}
-				return res.status(200).json(resObj)
-      } else {
-        return res.status(200).json('Não há autores na lista')
-      }
+				const resObj = new MessageService('success', 200, 'Lista de autores', allAuthors)
+        return res.json(resObj.sendMessage());
+			};
+      return res.status(200).json('Não há autores na lista');
     } catch (error) {
-			return res.status(400).json(error.message)    }
-  }
-
-	static async addAuthor(req, res) {
-		//conferir se não há jeito melhor de fazer esse tratamento
-		if (!req.body.name || typeof req.body.active != "boolean" || !req.body.email) {
-			return res.status(400).send('faltam informações')
-		}
-		const newAuthor = req.body
-		console.log(newAuthor)
-		try {
-			const createdAuthor = await database.Authors.create(newAuthor)
-			return res.status(201).json(createdAuthor)
-		} catch (error) {
-			console.log('caiu no erro', error)
-			return res.status(400).json(error.message);
+      return res.status(500).json(error.message);
 		}
 	}
 
-  static async getAuthor(req, res) {
+  static async addAuthor(req, res) {
+    if (!req.body.name || typeof req.body.active !== 'boolean' || !req.body.email) {
+      return res.status(400).json({ message: 'faltam informações' });
+    }
+    const newAuthor = req.body;
+    try {
+			await AuthorService.addAuthor(newAuthor);
+			return await res.status(201).json(newAuthor);
+    } catch (error) {
+      return res.status(500).json(error.message);
+    }
+  }
 
-		const { id } = req.params
-		console.log('parâmetro id', id)
+  static async getAuthor(req, res) {
+    const { id } = req.params;
 
     if (!Number(id)) {
-			return res.status(400).send('Favor inserir parâmetro válido')
+      return res.status(400).json({ message: 'Favor inserir parâmetro válido' });
     }
-
     try {
-      const oneAuthor = await database.Authors.findOne({
-				where: { id: Number(id) }
-			})
+			const oneAuthor = await AuthorService.getAuthor(id);
       if (!oneAuthor) {
-				return res.status(404).send(`Não encontrado autor com id ${id}`)
-      } else {
-				return res.status(200).json(oneAuthor)
+        return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
 			}
+			const resObj = new MessageService('success', 200, 'Autor encontrado', oneAuthor)
+			return res.json(resObj.sendMessage());
     } catch (error) {
-			return res.status(400).json(error.message);
+      return res.status(500).json(error.message);
+    }
+  }
+
+  static async updateAuthor(req, res) {
+		const newAuthorInfo = req.body;
+    const { id } = req.params;
+
+		if (!Number(id) || Object.keys(newAuthorInfo).length === 0 && newAuthorInfo.constructor === Object) {
+      return res.status(400).json({ message: 'Favor inserir informações válidas' });
+    }
+    try {
+			await AuthorService.updateAuthor(id, newAuthorInfo);
+			const updatedAuthor = await AuthorService.getAuthor(id)
+				if (!updatedAuthor) {
+					return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
+				}
+				return res.status(200).json(updatedAuthor);	
+    } catch (error) {
+      return res.status(500).json(error.message);
     }
 	}
 	
-	static async updateAuthor(req, res) {
+  static async deleteAuthor(req, res) {
+		const { id } = req.params;
 
-		const newAuthorInfo = req.body
-		const { id } = req.params
-		
+		if (!Number(id)) {
+      return res.status(400).json({ message: 'Favor inserir parâmetros válidos' });
+		}
+				
     try {
-      const oneAuthor = await database.Authors.findOne({ where: { id: Number(id) } })
-      if (oneAuthor) {
-				await database.Authors.update(newAuthorInfo, { where: { id: Number(id) } })
-				return res.status(200).json(await database.Authors
-					.findOne({ where: { id: Number(id) } }))
-      } else {
-				return res.status(404).send(`Não encontrado autor com id ${id}`)
+      const authorToDelete = await AuthorService.getAuthor(id);
+
+      if (!authorToDelete) {
+				return res.status(200).json({ message: `Não encontrado autor com id ${id}` });
 			}
+			await AuthorService.deleteAuthor(id);
+			return res.status(200).json({ message: `registro nome: ${authorToDelete.name} - deletado` });
     } catch (error) {
-			return res.status(400).json(error.message);
-    }		
-	}
-
-	static async deleteAuthor(req, res) {
-
-		const { id } = req.params
-
-    try {
-			const authorToDelete = await database.Authors.findOne({ where: { id: Number(id) } })
-
-      if (authorToDelete) {
-        await database.Authors.destroy({ where: { id: Number(id) } })
-        return res.status(200).send(`registro nome: ${authorToDelete.name} - deletado`)
-      }
-    } catch (error) {
-      return res.status(400).json(error.message);
+      return res.status(500).json(error.message);
     }
-	}
+  }
 }
 
-export default AuthorsController
+export default AuthorsController;
